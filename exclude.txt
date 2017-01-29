@@ -1,0 +1,7 @@
+.git
+*kdev*
+deploy.sh
+exclude.txt
+.ssh
+.cache
+.bash_history

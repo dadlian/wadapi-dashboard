@@ -1,0 +1,189 @@
+<div id='endpoint-screen'>
+	<div class='page-heading'>
+		<span class='title'>{{selection.endpoint.request}}</span>
+		<span class='subtitle'>{{selection.variant['query-string']}}</span>
+	</div>
+	<div class='summary'>
+		<div id='runtime-stat' class='statistic'>
+			<span class='value'>{{selection.variant['average-runtime'] | number:3}}</span>
+			<span class='name'>Avg. Runtime</span>
+		</div>
+		<div id='requests-stat' class='statistic' ng-if="selection.variant['query-string'] == 'Overall'">
+			<span class='value'>{{selection.variant['daily-requests'] | number:3}}</span>
+			<span class='name'>Daily Requests</span>
+		</div>
+		<div id='variants-stat' class='statistic' ng-if="selection.variant['query-string'] == 'Overall'">
+			<span class='value'>{{selection.endpoint.variants.total}}</span>
+			<span class='name'>Variants</span>
+		</div>
+		<div id='object-stat' class='statistic' ng-if="selection.variant['query-string'] !== 'Overall' && profiler.objects.listing.length">
+			<span class='value'>{{profiler.objects.summary.loadtime | number:3}}</span>
+			<span class='name'>Obj. Loading</span>
+		</div>
+		<div id='query-stat' class='statistic' ng-if="selection.variant['query-string'] !== 'Overall' && profiler.queries.listing.length">
+			<span class='value'>{{profiler.queries.summary.runtime | number:3}}</span>
+			<span class='name'>Query Times</span>
+		</div>
+		<div id='call-stat' class='statistic' ng-if="selection.variant['query-string'] !== 'Overall' && profiler.calls.listing.length">
+			<span class='value'>{{profiler.calls.summary.roundtrip | number:3}}</span>
+			<span class='name'>Call Times</span>
+		</div>
+		<div class='stretcher'></div>
+	</div>
+	<div class='chart half'>
+		<h3>Requests Per Day</h3>
+		<canvas id="requests-trend" class="chart chart-line" chart-labels="selection.variant['request-data'].days" chart-data="selection.variant['request-data'].values" chart-legend="false" height="100"></canvas> 
+	</div>
+	<div class='chart half'>
+		<h3>Daily Runtimes</h3>
+		<canvas id="runtimes-trend" class="chart chart-line" chart-labels="selection.variant['runtime-data'].days" chart-data="selection.variant['runtime-data'].values" chart-legend="false" height="100"></canvas> 
+	</div>
+	<div id='variant-listing' class='listing' ng-if="selection.variant['query-string'] == 'Overall'">
+		<div class='heading'>
+			<h3 class='title'>Variants</h3>
+			<ul class='pagination'>
+				<li ng-if="variants.currentPage > 1" ng-click="changeVariantPage(variants.currentPage-1)">&laquo;</li>
+				<li ng-if="variants.currentPage == variants.totalPages && variants.totalPages > 2" ng-click="changeVariantPage(variants.currentPage-2)">{{variants.currentPage - 2 }}</li>
+				<li ng-if="variants.currentPage > 1" ng-click="changeVariantPage(variants.currentPage-1)">{{variants.currentPage-1}}</li>
+				<li class='selected' ng-click="changeVariantPage(variants.currentPage)">{{variants.currentPage}}</li>
+				<li ng-if="variants.currentPage < variants.totalPages" ng-click="changeVariantPage(variants.currentPage+1)">{{variants.currentPage + 1}}</li>
+				<li ng-if="variants.currentPage == 1 && variants.totalPages - variants.currentPage >= 2" ng-click="changeVariantPage(variants.currentPage+2)">{{variants.currentPage + 2 }}</li>
+				<li ng-if="variants.currentPage < variants.totalPages" ng-click="changeVariantPage(variants.currentPage+1)">&raquo;</li>
+			</ul>
+			<div class='stretcher'></div>
+		</div>
+		<table>
+			<tr>
+				<th colspan="{{variants.headings.length?variants.headings.length:1}}">Parameters</th>
+				<th ng-click="toggleOrder('average-runtime')" rowspan=2><div class='title' ng-class="{'ascender':variants.sort=='average-runtime'&&variants.order>0,'descender':variants.sort=='average-runtime'&&variants.order<0}">Avg. Runtime</div></th>
+				<th ng-click="toggleOrder('daily-requests')" rowspan=2><div class='title' ng-class="{'ascender':variants.sort=='daily-requests'&&variants.order>0,'descender':variants.sort=='daily-requests'&&variants.order<0}">Req/Day</div></th>
+			</tr>
+			<tr>
+				<th ng-if="variants.headings.length == 0">No Query</th>
+				<th ng-repeat="parameter in variants.headings">{{parameter | capitalise}}</th>
+			</tr>
+			<tr ng-repeat='variant in variants.frame' ng-click="selectVariant(getVariantIndex(variant['query-string']))">
+				<td ng-if="variants.headings.length == 0">No Query</td>
+				<td ng-repeat="(parameter, value) in variant.parameters">{{value?value:"Blank"}}</td>
+				<td>{{variant['average-runtime'] | number:3}}</td>
+				<td>{{variant['daily-requests'] | number:3}}</td>
+			</tr>
+		</table>
+	</div>
+	<div id='object-listing' class='listing' ng-if="selection.variant['query-string'] !== 'Overall' && profiler.objects.listing.length">
+		<div class='heading'>
+			<h3 class='title'>Objects Loaded</h3>
+			<ul class='pagination'>
+				<li ng-if="profiler.objects.currentPage > 1" ng-click="changeListingPage('objects',profiler.objects.currentPage-1)">&laquo;</li>
+				<li ng-if="profiler.objects.currentPage == profiler.objects.totalPages && profiler.objects.totalPages > 2" ng-click="changeListingPage('objects',profiler.objects.currentPage-2)">{{profiler.objects.currentPage - 2 }}</li>
+				<li ng-if="profiler.objects.currentPage > 1" ng-click="changeListingPage('objects',profiler.objects.currentPage-1)">{{profiler.objects.currentPage-1}}</li>
+				<li class='selected' ng-click="changeListingPage('objects',profiler.objects.currentPage)">{{profiler.objects.currentPage}}</li>
+				<li ng-if="profiler.objects.currentPage < profiler.objects.totalPages" ng-click="changeListingPage('objects',profiler.objects.currentPage+1)">{{profiler.objects.currentPage + 1}}</li>
+				<li ng-if="profiler.objects.currentPage == 1 && profiler.objects.totalPages - profiler.objects.currentPage >= 2" ng-click="changeListingPage('objects',profiler.objects.currentPage+2)">{{profiler.objects.currentPage + 2 }}</li>
+				<li ng-if="profiler.objects.currentPage < profiler.objects.totalPages" ng-click="changeListingPage('objects',profiler.objects.currentPage+1)">&raquo;</li>
+			</ul>
+			<div class='stretcher'></div>
+		</div>
+		<table>
+			<tr>
+				<th ng-click="toggleListingOrder('objects','class')"><div class='title' ng-class="{'ascender':profiler.objects.sort=='class'&&profiler.objects.order>0,'descender':profiler.objects.sort=='class'&&profiler.objects.order<0}">Class</div></th>
+				<th ng-click="toggleListingOrder('objects','request-instances')"><div class='title' ng-class="{'ascender':profiler.objects.sort=='request-instances'&&profiler.objects.order>0,'descender':profiler.objects.sort=='request-instances'&&profiler.objects.order<0}">Loads/Req</div></th>
+				<th ng-click="toggleListingOrder('objects','instance-loadtime')"><div class='title' ng-class="{'ascender':profiler.objects.sort=='instance-loadtime'&&profiler.objects.order>0,'descender':profiler.objects.sort=='instance-loadtime'&&profiler.objects.order<0}">Instance Load</div></th>
+				<th ng-click="toggleListingOrder('objects','total-loadtime')"><div class='title' ng-class="{'ascender':profiler.objects.sort=='total-loadtime'&&profiler.objects.order>0,'descender':profiler.objects.sort=='total-loadtime'&&profiler.objects.order<0}">Total Load</div></th>
+			</tr>
+			<tr ng-repeat='object in profiler.objects.frame'>
+				<td title='{{object.class}}'>{{object.class}}</td>
+				<td>{{object['request-instances'] | number:1}}</td>
+				<td>{{object['instance-loadtime'] | number:4}}</td>
+				<td>{{object['total-loadtime'] | number:4}}</td>
+			</tr>
+		</table>
+	</div>
+	<div id='query-listing' class='listing' ng-if="selection.variant['query-string'] !== 'Overall' && profiler.queries.listing.length">
+		<div class='heading'>
+			<h3 class='title'>Queries Executed</h3>
+			<ul class='pagination'>
+				<li ng-if="profiler.queries.currentPage > 1" ng-click="changeListingPage('queries',profiler.queries.currentPage-1)">&laquo;</li>
+				<li ng-if="profiler.queries.currentPage == profiler.queries.totalPages && profiler.queries.totalPages > 2" ng-click="changeListingPage('queries',profiler.queries.currentPage-2)">{{profiler.queries.currentPage - 2 }}</li>
+				<li ng-if="profiler.queries.currentPage > 1" ng-click="changeListingPage('queries',profiler.queries.currentPage-1)">{{profiler.queries.currentPage-1}}</li>
+				<li class='selected' ng-click="changeListingPage('queries',profiler.queries.currentPage)">{{profiler.queries.currentPage}}</li>
+				<li ng-if="profiler.queries.currentPage < profiler.queries.totalPages" ng-click="changeListingPage('queries',profiler.queries.currentPage+1)">{{profiler.queries.currentPage + 1}}</li>
+				<li ng-if="profiler.queries.currentPage == 1 && profiler.queries.totalPages - profiler.queries.currentPage >= 2" ng-click="changeListingPage('queries',profiler.queries.currentPage+2)">{{profiler.queries.currentPage + 2 }}</li>
+				<li ng-if="profiler.queries.currentPage < profiler.queries.totalPages" ng-click="changeListingPage('queries',profiler.queries.currentPage+1)">&raquo;</li>
+			</ul>
+			<div class='stretcher'></div>
+		</div>
+		<table>
+			<tr>
+				<th ng-click="toggleListingOrder('queries','query')"><div class='title' ng-class="{'ascender':profiler.queries.sort=='query'&&profiler.queries.order>0,'descender':profiler.queries.sort=='query'&&profiler.queries.order<0}">Query</div></th>
+				<th ng-click="toggleListingOrder('queries','request-executions')"><div class='title' ng-class="{'ascender':profiler.queries.sort=='request-executions'&&profiler.queries.order>0,'descender':profiler.queries.sort=='request-executions'&&profiler.queries.order<0}">Executions/Req</div></th>
+				<th ng-click="toggleListingOrder('queries','query-runtime')"><div class='title' ng-class="{'ascender':profiler.queries.sort=='query-runtime'&&profiler.queries.order>0,'descender':profiler.queries.sort=='query-runtime'&&profiler.queries.order<0}">Query Runtime</div></th>
+				<th ng-click="toggleListingOrder('queries','total-runtime')"><div class='title' ng-class="{'ascender':profiler.queries.sort=='total-runtime'&&profiler.queries.order>0,'descender':profiler.queries.sort=='total-runtime'&&profiler.queries.order<0}">Total Runtime</div></th>
+			</tr>
+			<tr ng-repeat='query in profiler.queries.frame'>
+				<td title='{{query.query}}'>{{query.query}}</td>
+				<td>{{query['request-executions'] | number:1}}</td>
+				<td>{{query['query-runtime'] | number:4}}</td>
+				<td>{{query['total-runtime'] | number:4}}</td>
+			</tr>
+		</table>
+	</div>
+	<div id='call-listing' class='listing' ng-if="selection.variant['query-string'] !== 'Overall' && profiler.calls.listing.length">
+		<div class='heading'>
+			<h3 class='title'>Calls Made</h3>
+			<ul class='pagination'>
+				<li ng-if="profiler.calls.currentPage > 1" ng-click="changeListingPage('calls',profiler.calls.currentPage-1)">&laquo;</li>
+				<li ng-if="profiler.calls.currentPage == profiler.calls.totalPages && profiler.calls.totalPages > 2" ng-click="changeListingPage('calls',profiler.calls.currentPage-2)">{{profiler.calls.currentPage - 2 }}</li>
+				<li ng-if="profiler.calls.currentPage > 1" ng-click="changeListingPage('calls',profiler.calls.currentPage-1)">{{profiler.calls.currentPage-1}}</li>
+				<li class='selected' ng-click="changeListingPage('calls',profiler.calls.currentPage)">{{profiler.calls.currentPage}}</li>
+				<li ng-if="profiler.calls.currentPage < profiler.calls.totalPages" ng-click="changeListingPage('calls',profiler.calls.currentPage+1)">{{profiler.calls.currentPage + 1}}</li>
+				<li ng-if="profiler.calls.currentPage == 1 && profiler.calls.totalPages - profiler.calls.currentPage >= 2" ng-click="changeListingPage('calls',profiler.calls.currentPage+2)">{{profiler.calls.currentPage + 2 }}</li>
+				<li ng-if="profiler.calls.currentPage < profiler.calls.totalPages" ng-click="changeListingPage('calls',profiler.calls.currentPage+1)">&raquo;</li>
+			</ul>
+			<div class='stretcher'></div>
+		</div>
+		<table>
+			<tr>
+				<th ng-click="toggleListingOrder('calls','call')"><div class='title' ng-class="{'ascender':profiler.calls.sort=='call'&&profiler.calls.order>0,'descender':profiler.calls.sort=='call'&&profiler.calls.order<0}">Call</div></th>
+				<th ng-click="toggleListingOrder('calls','request-calls')"><div class='title' ng-class="{'ascender':profiler.calls.sort=='request-calls'&&profiler.calls.order>0,'descender':profiler.calls.sort=='request-calls'&&profiler.calls.order<0}">Calls/Req</div></th>
+				<th ng-click="toggleListingOrder('calls','call-roundtrip')"><div class='title' ng-class="{'ascender':profiler.calls.sort=='call-roundtrip'&&profiler.calls.order>0,'descender':profiler.calls.sort=='call-roundtrip'&&profiler.calls.order<0}">Call Roundtrip</div></th>
+				<th ng-click="toggleListingOrder('calls','total-roundtrip')"><div class='title' ng-class="{'ascender':profiler.calls.sort=='total-roundtrip'&&profiler.calls.order>0,'descender':profiler.calls.sort=='total-roundtrip'&&profiler.calls.order<0}">Total Roundtrip</div></th>
+			</tr>
+			<tr ng-repeat='call in profiler.calls.frame'>
+				<td title='{{call.call}}'>{{call.call}}</td>
+				<td>{{call['request-calls'] | number:1}}</td>
+				<td>{{call['call-roundtrip'] | number:4}}</td>
+				<td>{{call['total-roundtrip'] | number:4}}</td>
+			</tr>
+		</table>
+	</div>
+	<div id='custom-listing' class='listing' ng-if="selection.variant['query-string'] !== 'Overall' && profiler.custom.listing.length">
+		<div class='heading'>
+			<h3 class='title'>Custom Profilers</h3>
+			<ul class='pagination'>
+				<li ng-if="profiler.custom.currentPage > 1" ng-click="changeListingPage('custom',profiler.custom.currentPage-1)">&laquo;</li>
+				<li ng-if="profiler.custom.currentPage == profiler.custom.totalPages && profiler.custom.totalPages > 2" ng-click="changeListingPage('custom',profiler.custom.currentPage-2)">{{profiler.custom.currentPage - 2 }}</li>
+				<li ng-if="profiler.custom.currentPage > 1" ng-click="changeListingPage('custom',profiler.custom.currentPage-1)">{{profiler.custom.currentPage-1}}</li>
+				<li class='selected' ng-click="changeListingPage('custom',profiler.custom.currentPage)">{{profiler.custom.currentPage}}</li>
+				<li ng-if="profiler.custom.currentPage < profiler.custom.totalPages" ng-click="changeListingPage('custom',profiler.custom.currentPage+1)">{{profiler.custom.currentPage + 1}}</li>
+				<li ng-if="profiler.custom.currentPage == 1 && profiler.custom.totalPages - profiler.custom.currentPage >= 2" ng-click="changeListingPage('custom',profiler.custom.currentPage+2)">{{profiler.custom.currentPage + 2 }}</li>
+				<li ng-if="profiler.custom.currentPage < profiler.custom.totalPages" ng-click="changeListingPage('custom',profiler.custom.currentPage+1)">&raquo;</li>
+			</ul>
+			<div class='stretcher'></div>
+		</div>
+		<table>
+			<tr>
+				<th ng-click="toggleListingOrder('custom','key')"><div class='title' ng-class="{'ascender':profiler.custom.sort=='key'&&profiler.custom.order>0,'descender':profiler.custom.sort=='key'&&profiler.custom.order<0}">Profiled Task</div></th>
+				<th ng-click="toggleListingOrder('custom','runs')"><div class='title' ng-class="{'ascender':profiler.custom.sort=='runs'&&profiler.custom.order>0,'descender':profiler.custom.sort=='runs'&&profiler.custom.order<0}">Runs/Req</div></th>
+				<th ng-click="toggleListingOrder('custom','duration')"><div class='title' ng-class="{'ascender':profiler.custom.sort=='duration'&&profiler.custom.order>0,'descender':profiler.custom.sort=='duration'&&profiler.custom.order<0}">Duration</div></th>
+				<th ng-click="toggleListingOrder('custom','total-duration')"><div class='title' ng-class="{'ascender':profiler.custom.sort=='total-duration'&&profiler.custom.order>0,'descender':profiler.custom.sort=='total-duration'&&profiler.custom.order<0}">Total Duration</div></th>
+			</tr>
+			<tr ng-repeat='custom in profiler.custom.frame'>
+				<td title='{{custom.key}}'>{{custom.key}}</td>
+				<td>{{custom['runs'] | number:1}}</td>
+				<td>{{custom['duration'] | number:4}}</td>
+				<td>{{custom['total-duration'] | number:4}}</td>
+			</tr>
+		</table>
+	</div>
+</div>

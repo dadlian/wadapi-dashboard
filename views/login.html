@@ -1,0 +1,23 @@
+<div id='login-screen' ng-controller='LoginController'>
+	<div id='login-logo'>
+		<h2>Wadapi Dashboard</h2>
+		<h4>Real-time API Analytics</h4>
+	</div>
+	<div id='login-box' ng-if="!status.signing">
+		<form novalidate name='loginForm'>
+			<img id="wadapi-logo" src='../assets/wadapi.png' />
+			<span ng-if='state.failed' class='error'>We couldn't log you in! Please try again.</span>
+			<div class='input full'>
+				<input name='username' placeholder='username' type='text' ng-class="{'error': loginForm.username.$dirty && loginForm.username.$invalid}" ng-model="credentials.username" required />
+				<span class='error' ng-show='loginForm.username.$dirty && loginForm.username.$invalid'>Please enter your username</span>
+			</div>
+			<div class='input full'>
+				<input name='password' placeholder='password' type='password' ng-class="{'error': loginForm.password.$dirty && loginForm.password.$invalid}" ng-model="credentials.password" required />
+				<span class='error' ng-show='loginForm.password.$dirty && loginForm.password.$invalid'>Please enter your password</span>
+			</div>
+			<div class='input full button'>
+				<button ng-click='login(loginForm)'>login</button>
+			</div>
+		</form>
+	</div>
+</div>

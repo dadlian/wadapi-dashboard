@@ -1,0 +1,58 @@
+<div id='api-screen'>
+	<div class='page-heading'>
+		<span class='title'>{{selection.api.name}}</span>
+		<span class='subtitle'>{{selection.api.root}}</span>
+	</div>
+	<div class='summary'>
+		<div id='requests-stat' class='statistic'>
+			<span class='value'>{{selection.api['daily-requests'] | number:3}}</span>
+			<span class='name'>Daily Requests</span>
+		</div>
+		<div id='endpoints-stat' class='statistic'>
+			<span class='value'>{{selection.api.endpoints.total}}</span>
+			<span class='name'>Endpoints</span>
+		</div>
+		<div class='stretcher'></div>
+	</div>
+	<div class='chart'>
+		<h3>Requests Per Day</h3>
+		<canvas id="requests-trend" class="chart chart-line" chart-labels="requestsTrend.days" chart-data="requestsTrend.requests" chart-legend="false" height="50"></canvas> 
+	</div>
+	<div class='chart half daily'>
+		<h3>Today's Most Requested</h3>
+		<canvas id="most-requested" class="chart chart-bar" chart-options="dailyChartOptions" chart-labels="mostRequested.endpoints" chart-data="mostRequested.requests" chart-legend="false" height="50"></canvas> 
+	</div>
+	<div class='chart half daily'>
+		<h3>Today's Slowest Requests</h3>
+		<canvas id="slowest-requestes" class="chart chart-bar" chart-options="dailyChartOptions" chart-labels="slowestRequests.endpoints" chart-data="slowestRequests.requests" chart-legend="false" height="50"></canvas> 
+	</div>
+	<div id='endpoint-listing' class='listing'>
+		<div class='heading'>
+			<h3 class='title'>Endpoints</h3>
+			<ul class='pagination'>
+				<li ng-if="endpoints.currentPage > 1" ng-click='changeEndpointPage(endpoints.currentPage-1)'>&laquo;</li>
+				<li ng-if="endpoints.currentPage == endpoints.totalPages && endpoints.totalPages > 2" ng-click='changeEndpointPage(endpoints.currentPage-2)'>{{endpoints.currentPage - 2 }}</li>
+				<li ng-if="endpoints.currentPage > 1" ng-click='changeEndpointPage(endpoints.currentPage-1)'>{{endpoints.currentPage-1}}</li>
+				<li class='selected' ng-click='changeEndpointPage(endpoints.currentPage)'>{{endpoints.currentPage}}</li>
+				<li ng-if="endpoints.currentPage < endpoints.totalPages" ng-click='changeEndpointPage(endpoints.currentPage+1)'>{{endpoints.currentPage + 1}}</li>
+				<li ng-if="endpoints.currentPage == 1 && endpoints.totalPages - endpoints.currentPage >= 2" ng-click='changeEndpointPage(endpoints.currentPage+2)'>{{endpoints.currentPage + 2 }}</li>
+				<li ng-if="endpoints.currentPage < endpoints.totalPages" ng-click='changeEndpointPage(endpoints.currentPage+1)'>&raquo;</li>
+			</ul>
+			<div class='stretcher'></div>
+		</div>
+		<table>
+			<tr>
+				<th ng-click="toggleOrder('request')"><div class='title' ng-class="{'ascender':endpoints.sort=='request'&&endpoints.order>0,'descender':endpoints.sort=='request'&&endpoints.order<0}">Request</div></th>
+				<th ng-click="toggleOrder('average-runtime')"><div class='title' ng-class="{'ascender':endpoints.sort=='average-runtime'&&endpoints.order>0,'descender':endpoints.sort=='average-runtime'&&endpoints.order<0}">Avg. Runtime</div></th>
+				<th ng-click="toggleOrder('daily-requests')"><div class='title' ng-class="{'ascender':endpoints.sort=='daily-requests'&&endpoints.order>0,'descender':endpoints.sort=='daily-requests'&&endpoints.order<0}">Req/Day</div></th>
+				<th ng-click="toggleOrder('variants')"><div class='title' ng-class="{'ascender':endpoints.sort=='variants'&&endpoints.order>0,'descender':endpoints.sort=='variants'&&endpoints.order<0}">Variants</div></th>
+			</tr>
+			<tr ng-repeat='endpoint in endpoints.frame' ng-click='selectEndpoint(getEndpointIndex(endpoint.request))'>
+				<td title='{{endpoint.request}}'>{{endpoint.request}}</td>
+				<td>{{endpoint['average-runtime'] | number:3}}</td>
+				<td>{{endpoint['daily-requests'] | number:2}}</td>
+				<td>{{endpoint.variants.total}}</td>
+			</tr>
+		</table>
+	</div>
+</div>
