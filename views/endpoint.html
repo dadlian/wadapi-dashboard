@@ -57,6 +57,9 @@
 				<th colspan="{{variants.headings.length?variants.headings.length:1}}">Parameters</th>
 				<th ng-click="toggleOrder('average-runtime')" rowspan=2><div class='title' ng-class="{'ascender':variants.sort=='average-runtime'&&variants.order>0,'descender':variants.sort=='average-runtime'&&variants.order<0}">Avg. Runtime</div></th>
 				<th ng-click="toggleOrder('daily-requests')" rowspan=2><div class='title' ng-class="{'ascender':variants.sort=='daily-requests'&&variants.order>0,'descender':variants.sort=='daily-requests'&&variants.order<0}">Req/Day</div></th>
+				<th ng-click="toggleOrder('request-objects')" rowspan=2><div class='title' ng-class="{'ascender':variants.sort=='request-objects'&&variants.order>0,'descender':variants.sort=='request-objects'&&variants.order<0}">Req. Objects</div></th>
+				<th ng-click="toggleOrder('request-queries')" rowspan=2><div class='title' ng-class="{'ascender':variants.sort=='request-queries'&&variants.order>0,'descender':variants.sort=='request-queries'&&variants.order<0}">Req. Queries</div></th>
+				<th ng-click="toggleOrder('request-calls')" rowspan=2><div class='title' ng-class="{'ascender':variants.sort=='request-calls'&&variants.order>0,'descender':variants.sort=='request-calls'&&variants.order<0}">Req. Calls</div></th>
 			</tr>
 			<tr>
 				<th ng-if="variants.headings.length == 0">No Query</th>
@@ -67,6 +70,9 @@
 				<td ng-repeat="(parameter, value) in variant.parameters">{{value?value:"Blank"}}</td>
 				<td>{{variant['average-runtime'] | number:3}}</td>
 				<td>{{variant['daily-requests'] | number:3}}</td>
+				<td>{{variant['request-objects'] | number:2}}</td>
+				<td>{{variant['request-queries'] | number:2}}</td>
+				<td>{{variant['request-calls'] | number:2}}</td>
 			</tr>
 		</table>
 	</div>

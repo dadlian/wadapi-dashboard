@@ -45,12 +45,16 @@
 				<th ng-click="toggleOrder('request')"><div class='title' ng-class="{'ascender':endpoints.sort=='request'&&endpoints.order>0,'descender':endpoints.sort=='request'&&endpoints.order<0}">Request</div></th>
 				<th ng-click="toggleOrder('average-runtime')"><div class='title' ng-class="{'ascender':endpoints.sort=='average-runtime'&&endpoints.order>0,'descender':endpoints.sort=='average-runtime'&&endpoints.order<0}">Avg. Runtime</div></th>
 				<th ng-click="toggleOrder('daily-requests')"><div class='title' ng-class="{'ascender':endpoints.sort=='daily-requests'&&endpoints.order>0,'descender':endpoints.sort=='daily-requests'&&endpoints.order<0}">Req/Day</div></th>
+				<th ng-click="toggleOrder('request-queries')"><div class='title' ng-class="{'ascender':endpoints.sort=='request-queries'&&endpoints.order>0,'descender':endpoints.sort=='request-queries'&&endpoints.order<0}">Req. Queries</div></th>
+				<th ng-click="toggleOrder('request-calls')"><div class='title' ng-class="{'ascender':endpoints.sort=='request-calls'&&endpoints.order>0,'descender':endpoints.sort=='request-calls'&&endpoints.order<0}">Req. Calls</div></th>
 				<th ng-click="toggleOrder('variants')"><div class='title' ng-class="{'ascender':endpoints.sort=='variants'&&endpoints.order>0,'descender':endpoints.sort=='variants'&&endpoints.order<0}">Variants</div></th>
 			</tr>
 			<tr ng-repeat='endpoint in endpoints.frame' ng-click='selectEndpoint(getEndpointIndex(endpoint.request))'>
 				<td title='{{endpoint.request}}'>{{endpoint.request}}</td>
 				<td>{{endpoint['average-runtime'] | number:3}}</td>
 				<td>{{endpoint['daily-requests'] | number:2}}</td>
+				<td>{{endpoint['request-queries'] | number:2}}</td>
+				<td>{{endpoint['request-calls'] | number:2}}</td>
 				<td>{{endpoint.variants.total}}</td>
 			</tr>
 		</table>
